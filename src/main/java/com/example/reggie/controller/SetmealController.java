@@ -13,11 +13,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RestController
@@ -29,6 +32,8 @@ public class SetmealController {
     private SetmealDishService setmealDishService;
     @Autowired
     private CategoryService categoryService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @GetMapping("/page")
     public R<Page> showPage(int page, int pageSize, String name) {
@@ -59,6 +64,8 @@ public class SetmealController {
     @PostMapping
     public R<String> save(@RequestBody SetmealDto setmealDto){
         setmealService.saveWithDish(setmealDto);
+        String key = "setmeal_"+setmealDto.getCategoryId()+"_1";
+        redisTemplate.delete(key);
         return R.success("添加成功");
     }
 
@@ -71,6 +78,8 @@ public class SetmealController {
     @PutMapping
     public R<String> update(@RequestBody SetmealDto setmealDto){
         setmealService.updateWithDish(setmealDto);
+        String key = "setmeal_"+setmealDto.getCategoryId()+"_1";
+        redisTemplate.delete(key);
         return R.success("修改成功");
     }
 
@@ -81,22 +90,32 @@ public class SetmealController {
             setmeal.setStatus(status);
         }
         setmealService.updateBatchById(setmeals);
+        Set keys = redisTemplate.keys("setmeal_*");
+        redisTemplate.delete(keys);
         return R.success("修改成功");
     }
 
     @DeleteMapping
     public R<String> delete(Long[] ids){
         setmealService.deleteWithDish(ids);
+        Set keys = redisTemplate.keys("setmeal_*");
+        redisTemplate.delete(keys);
         return R.success("删除成功");
     }
 
     @GetMapping("/list")
     public R<List<SetmealDto>> list(Setmeal setmeal){
+        List<SetmealDto> dtoList = null;
+        String key = "setmeal_"+setmeal.getCategoryId()+"_"+setmeal.getStatus();
+        dtoList = (List<SetmealDto>) redisTemplate.opsForValue().get(key);
+        if (dtoList != null){
+            return R.success(dtoList);
+        }
+        dtoList = new ArrayList<>();
         LambdaQueryWrapper<Setmeal> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(Setmeal::getCategoryId,setmeal.getCategoryId());
         lambdaQueryWrapper.eq(Setmeal::getStatus,setmeal.getStatus());
         List<Setmeal> list = setmealService.list(lambdaQueryWrapper);
-        List<SetmealDto> dtoList = new ArrayList<>();
         for (Setmeal s : list) {
             SetmealDto setmealDto = new SetmealDto();
             BeanUtils.copyProperties(s,setmealDto);
@@ -106,6 +125,7 @@ public class SetmealController {
             setmealDto.setSetmealDishes(setmealDishes);
             dtoList.add(setmealDto);
         }
+        redisTemplate.opsForValue().set(key,dtoList,1, TimeUnit.HOURS);
         return R.success(dtoList);
     }
 }

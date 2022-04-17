@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.AntPathMatcher;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
@@ -51,7 +50,6 @@ public class LoginCheckFilter implements Filter {
             filterChain.doFilter(request,response);
             return;
         }
-        log.info("未登录");
         response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
     }
 

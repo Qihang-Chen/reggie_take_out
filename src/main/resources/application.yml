@@ -1,6 +1,10 @@
 server:
   port: 8080
 spring:
+  redis:
+    host: 192.168.146.7
+    port: 6379
+    database: 0
   application:
     name: reggie_take_out
   datasource:
