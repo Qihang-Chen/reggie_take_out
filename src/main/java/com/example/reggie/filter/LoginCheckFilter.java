@@ -31,7 +31,11 @@ public class LoginCheckFilter implements Filter {
                 "/employee/login",
                 "/employee/logout",
                 "/backend/**",
-                "/front/**"
+                "/front/**",
+                "/common/**",
+                "/user/sendMsg",
+                "/user/login",
+                "/user/logout"
         };
         if (check(requestURI, urls)) {
             filterChain.doFilter(request, response);
@@ -40,6 +44,11 @@ public class LoginCheckFilter implements Filter {
         if (request.getSession().getAttribute("employee") != null) {
             BaseContext.setCurrentId((Long) request.getSession().getAttribute("employee"));
             filterChain.doFilter(request, response);
+            return;
+        }
+        if (request.getSession().getAttribute("user") != null){
+            BaseContext.setCurrentId((Long) request.getSession().getAttribute("user"));
+            filterChain.doFilter(request,response);
             return;
         }
         log.info("未登录");

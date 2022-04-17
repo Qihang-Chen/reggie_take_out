@@ -2,7 +2,6 @@ package com.example.reggie.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.reggie.entity.Category;
 import com.example.reggie.entity.Setmeal;
 import com.example.reggie.entity.SetmealDish;
 import com.example.reggie.entity.SetmealDto;

@@ -1,5 +1,7 @@
 package com.example.reggie.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -23,6 +25,7 @@ public class Orders implements Serializable {
 
 
     //下单用户id
+    @TableField(fill = FieldFill.INSERT)
     private Long userId;
 
     //地址id
@@ -30,10 +33,12 @@ public class Orders implements Serializable {
 
 
     //下单时间
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime orderTime;
 
 
     //结账时间
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime checkoutTime;
 
 

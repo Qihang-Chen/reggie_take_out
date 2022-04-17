@@ -6,7 +6,9 @@ import com.example.reggie.entity.Category;
 import com.example.reggie.entity.DishDto;
 import com.example.reggie.common.R;
 import com.example.reggie.entity.Dish;
+import com.example.reggie.entity.DishFlavor;
 import com.example.reggie.service.CategoryService;
+import com.example.reggie.service.DishFlavorService;
 import com.example.reggie.service.DishService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -28,6 +30,9 @@ public class DishController {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private DishFlavorService dishFlavorService;
 
     @GetMapping("/page")
     public R<Page> showPage(int page, int pageSize, String name) {
@@ -87,11 +92,21 @@ public class DishController {
     }
 
     @GetMapping("/list")
-    public R<List<Dish>> list(Dish dish) {
+    public R<List<DishDto>> list(Dish dish) {
         LambdaQueryWrapper<Dish> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(Dish::getCategoryId, dish.getCategoryId());
         lambdaQueryWrapper.orderByDesc(Dish::getSort);
         List<Dish> list = dishService.list(lambdaQueryWrapper);
-        return R.success(list);
+        List<DishDto> dtoList = new ArrayList<>();
+        for (Dish d : list) {
+            DishDto dishDto = new DishDto();
+            BeanUtils.copyProperties(d,dishDto);
+            LambdaQueryWrapper<DishFlavor> lambdaQueryWrapperWithFlavor = new LambdaQueryWrapper<>();
+            lambdaQueryWrapperWithFlavor.eq(DishFlavor::getDishId,d.getId());
+            List<DishFlavor> flavors = dishFlavorService.list(lambdaQueryWrapperWithFlavor);
+            dishDto.setFlavors(flavors);
+            dtoList.add(dishDto);
+        }
+        return R.success(dtoList);
     }
 }
