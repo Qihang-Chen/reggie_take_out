@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -68,5 +69,17 @@ public class AddressBookController {
             return R.success(addressBook);
         }
         return R.error("未找到该地址");
+    }
+
+    @PutMapping
+    public R<String> update(@RequestBody AddressBook addressBook){
+        addressBookService.updateById(addressBook);
+        return R.success("修改成功");
+    }
+
+    @DeleteMapping
+    public R<String> delete(Long[] ids){
+        addressBookService.removeByIds(Arrays.asList(ids));
+        return R.success("删除成功");
     }
 }
