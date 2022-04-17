@@ -65,7 +65,6 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
         orders.setId(orderId);
         orders.setStatus(2);
         orders.setAmount(new BigDecimal(amount.get()));
-        orders.setNumber(orderId.toString());
         orders.setUserName(user.getName());
         orders.setConsignee(addressBook.getConsignee());
         orders.setPhone(addressBook.getPhone());
