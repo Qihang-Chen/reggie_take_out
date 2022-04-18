@@ -39,9 +39,9 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
     public SetmealDto getByIdWithDishes(Long id) {
         SetmealDto setmealDto = new SetmealDto();
         Setmeal setmeal = this.getById(id);
-        BeanUtils.copyProperties(setmeal,setmealDto);
+        BeanUtils.copyProperties(setmeal, setmealDto);
         LambdaQueryWrapper<SetmealDish> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(SetmealDish::getSetmealId,id);
+        lambdaQueryWrapper.eq(SetmealDish::getSetmealId, id);
         List<SetmealDish> setmealDishes = setmealDishService.list(lambdaQueryWrapper);
         setmealDto.setSetmealDishes(setmealDishes);
         String categoryName = categoryService.getById(setmealDto.getCategoryId()).getName();
@@ -53,7 +53,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
     public void updateWithDish(SetmealDto setmealDto) {
         this.updateById(setmealDto);
         LambdaQueryWrapper<SetmealDish> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(SetmealDish::getSetmealId,setmealDto.getId());
+        lambdaQueryWrapper.eq(SetmealDish::getSetmealId, setmealDto.getId());
         setmealDishService.remove(lambdaQueryWrapper);
         List<SetmealDish> setmealDishes = setmealDto.getSetmealDishes();
         for (SetmealDish setmealDish : setmealDishes) {

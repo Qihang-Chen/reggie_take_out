@@ -5,4 +5,6 @@ import com.example.reggie.entity.Orders;
 
 public interface OrdersService extends IService<Orders> {
     public void submit(Orders orders);
+
+    public void again(Orders orders);
 }

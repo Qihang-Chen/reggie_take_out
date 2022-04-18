@@ -37,7 +37,7 @@ public class SetmealController {
 
     @GetMapping("/page")
     public R<Page> showPage(int page, int pageSize, String name) {
-        Page<Setmeal> pageInfo = new Page<>(page,pageSize);
+        Page<Setmeal> pageInfo = new Page<>(page, pageSize);
         Page<SetmealDto> pageDtoInfo = new Page<>();
         LambdaQueryWrapper<Setmeal> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.like(StringUtils.isNotEmpty(name), Setmeal::getName, name);
@@ -62,8 +62,8 @@ public class SetmealController {
     }
 
     @PostMapping
-    @CacheEvict(value = "setmealCache",key = "#setmealDto.categoryId+'_1'")
-    public R<String> save(@RequestBody SetmealDto setmealDto){
+    @CacheEvict(value = "setmealCache", key = "#setmealDto.categoryId+'_1'")
+    public R<String> save(@RequestBody SetmealDto setmealDto) {
         setmealService.saveWithDish(setmealDto);
 //        String key = "setmeal_"+setmealDto.getCategoryId()+"_1";
 //        redisTemplate.delete(key);
@@ -71,14 +71,14 @@ public class SetmealController {
     }
 
     @GetMapping("/{id}")
-    public R<SetmealDto> getById(@PathVariable Long id){
+    public R<SetmealDto> getById(@PathVariable Long id) {
         SetmealDto setmealDto = setmealService.getByIdWithDishes(id);
         return R.success(setmealDto);
     }
 
     @PutMapping
-    @CacheEvict(value = "setmealCache",key = "#setmealDto.categoryId+'_1'")
-    public R<String> update(@RequestBody SetmealDto setmealDto){
+    @CacheEvict(value = "setmealCache", key = "#setmealDto.categoryId+'_1'")
+    public R<String> update(@RequestBody SetmealDto setmealDto) {
         setmealService.updateWithDish(setmealDto);
 //        String key = "setmeal_"+setmealDto.getCategoryId()+"_1";
 //        redisTemplate.delete(key);
@@ -86,8 +86,8 @@ public class SetmealController {
     }
 
     @PostMapping("status/{status}")
-    @CacheEvict(value = "setmealCache",allEntries = true)
-    public R<String> updateStatus(@PathVariable Integer status, Long[] ids){
+    @CacheEvict(value = "setmealCache", allEntries = true)
+    public R<String> updateStatus(@PathVariable Integer status, Long[] ids) {
         List<Setmeal> setmeals = setmealService.listByIds(Arrays.asList(ids));
         for (Setmeal setmeal : setmeals) {
             setmeal.setStatus(status);
@@ -99,8 +99,8 @@ public class SetmealController {
     }
 
     @DeleteMapping
-    @CacheEvict(value = "setmealCache",allEntries = true)
-    public R<String> delete(Long[] ids){
+    @CacheEvict(value = "setmealCache", allEntries = true)
+    public R<String> delete(Long[] ids) {
         setmealService.deleteWithDish(ids);
 //        Set keys = redisTemplate.keys("setmeal_*");
 //        redisTemplate.delete(keys);
@@ -108,8 +108,8 @@ public class SetmealController {
     }
 
     @GetMapping("/list")
-    @Cacheable(value = "setmealCache",key = "#setmeal.categoryId+'_'+#setmeal.status")
-    public R<List<SetmealDto>> list(Setmeal setmeal){
+    @Cacheable(value = "setmealCache", key = "#setmeal.categoryId+'_'+#setmeal.status")
+    public R<List<SetmealDto>> list(Setmeal setmeal) {
 //        List<SetmealDto> dtoList = null;
 //        String key = "setmeal_"+setmeal.getCategoryId()+"_"+setmeal.getStatus();
 //        dtoList = (List<SetmealDto>) redisTemplate.opsForValue().get(key);
@@ -118,14 +118,14 @@ public class SetmealController {
 //        }
         List<SetmealDto> dtoList = new ArrayList<>();
         LambdaQueryWrapper<Setmeal> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(Setmeal::getCategoryId,setmeal.getCategoryId());
-        lambdaQueryWrapper.eq(Setmeal::getStatus,setmeal.getStatus());
+        lambdaQueryWrapper.eq(Setmeal::getCategoryId, setmeal.getCategoryId());
+        lambdaQueryWrapper.eq(Setmeal::getStatus, setmeal.getStatus());
         List<Setmeal> list = setmealService.list(lambdaQueryWrapper);
         for (Setmeal s : list) {
             SetmealDto setmealDto = new SetmealDto();
-            BeanUtils.copyProperties(s,setmealDto);
+            BeanUtils.copyProperties(s, setmealDto);
             LambdaQueryWrapper<SetmealDish> lambdaQueryWrapperWithDish = new LambdaQueryWrapper<>();
-            lambdaQueryWrapperWithDish.eq(SetmealDish::getSetmealId,s.getId());
+            lambdaQueryWrapperWithDish.eq(SetmealDish::getSetmealId, s.getId());
             List<SetmealDish> setmealDishes = setmealDishService.list(lambdaQueryWrapperWithDish);
             setmealDto.setSetmealDishes(setmealDishes);
             dtoList.add(setmealDto);

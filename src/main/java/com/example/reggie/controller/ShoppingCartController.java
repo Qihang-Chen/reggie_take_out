@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -20,59 +21,60 @@ public class ShoppingCartController {
     private ShoppingCartService shoppingCartService;
 
     @GetMapping("/list")
-    public R<List<ShoppingCart>> list(HttpServletRequest request){
+    public R<List<ShoppingCart>> list(HttpServletRequest request) {
         Long userId = (Long) request.getSession().getAttribute("user");
         LambdaQueryWrapper<ShoppingCart> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(ShoppingCart::getUserId,userId);
+        lambdaQueryWrapper.eq(ShoppingCart::getUserId, userId);
         lambdaQueryWrapper.orderByDesc(ShoppingCart::getCreateTime);
         List<ShoppingCart> shoppingCartlist = shoppingCartService.list(lambdaQueryWrapper);
         return R.success(shoppingCartlist);
     }
 
     @PostMapping("/add")
-    public R<ShoppingCart> add(@RequestBody ShoppingCart shoppingCart){
+    public R<ShoppingCart> add(@RequestBody ShoppingCart shoppingCart) {
         LambdaQueryWrapper<ShoppingCart> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(ShoppingCart::getUserId,BaseContext.getCurrentId());
-        if (shoppingCart.getDishId() != null){
-            lambdaQueryWrapper.eq(ShoppingCart::getDishId,shoppingCart.getDishId());
-        }else {
-            lambdaQueryWrapper.eq(ShoppingCart::getSetmealId,shoppingCart.getSetmealId());
+        lambdaQueryWrapper.eq(ShoppingCart::getUserId, BaseContext.getCurrentId());
+        if (shoppingCart.getDishId() != null) {
+            lambdaQueryWrapper.eq(ShoppingCart::getDishId, shoppingCart.getDishId());
+        } else {
+            lambdaQueryWrapper.eq(ShoppingCart::getSetmealId, shoppingCart.getSetmealId());
         }
         ShoppingCart result = shoppingCartService.getOne(lambdaQueryWrapper);
-        if (result != null){
-            result.setNumber(result.getNumber()+1);
+        if (result != null) {
+            result.setNumber(result.getNumber() + 1);
             shoppingCartService.updateById(result);
             return R.success(result);
         }
         shoppingCart.setUserId(BaseContext.getCurrentId());
+        shoppingCart.setCreateTime(LocalDateTime.now());
         shoppingCartService.save(shoppingCart);
         return R.success(shoppingCart);
     }
 
     @PostMapping("/sub")
-    public R<ShoppingCart> sub(@RequestBody ShoppingCart shoppingCart){
+    public R<ShoppingCart> sub(@RequestBody ShoppingCart shoppingCart) {
         LambdaQueryWrapper<ShoppingCart> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(ShoppingCart::getUserId,BaseContext.getCurrentId());
-        if (shoppingCart.getDishId() != null){
-            lambdaQueryWrapper.eq(ShoppingCart::getDishId,shoppingCart.getDishId());
-        }else {
-            lambdaQueryWrapper.eq(ShoppingCart::getSetmealId,shoppingCart.getSetmealId());
+        lambdaQueryWrapper.eq(ShoppingCart::getUserId, BaseContext.getCurrentId());
+        if (shoppingCart.getDishId() != null) {
+            lambdaQueryWrapper.eq(ShoppingCart::getDishId, shoppingCart.getDishId());
+        } else {
+            lambdaQueryWrapper.eq(ShoppingCart::getSetmealId, shoppingCart.getSetmealId());
         }
         ShoppingCart result = shoppingCartService.getOne(lambdaQueryWrapper);
-        if (result.getNumber() == 1){
+        if (result.getNumber() == 1) {
             shoppingCartService.removeById(result);
             result.setNumber(0);
             return R.success(result);
         }
-        result.setNumber(result.getNumber()-1);
+        result.setNumber(result.getNumber() - 1);
         shoppingCartService.updateById(result);
         return R.success(result);
     }
 
     @DeleteMapping("/clean")
-    public R<String> clean(){
+    public R<String> clean() {
         LambdaQueryWrapper<ShoppingCart> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(ShoppingCart::getUserId,BaseContext.getCurrentId());
+        lambdaQueryWrapper.eq(ShoppingCart::getUserId, BaseContext.getCurrentId());
         shoppingCartService.remove(lambdaQueryWrapper);
         return R.success("清空购物车成功");
     }

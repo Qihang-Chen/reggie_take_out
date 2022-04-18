@@ -45,9 +45,9 @@ public class LoginCheckFilter implements Filter {
             filterChain.doFilter(request, response);
             return;
         }
-        if (request.getSession().getAttribute("user") != null){
+        if (request.getSession().getAttribute("user") != null) {
             BaseContext.setCurrentId((Long) request.getSession().getAttribute("user"));
-            filterChain.doFilter(request,response);
+            filterChain.doFilter(request, response);
             return;
         }
         response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));

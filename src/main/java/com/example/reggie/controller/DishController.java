@@ -72,7 +72,7 @@ public class DishController {
     }
 
     @PostMapping
-    @CacheEvict(value = "dishCache",key = "#dishDto.categoryId+'_1'")
+    @CacheEvict(value = "dishCache", key = "#dishDto.categoryId+'_1'")
     public R<String> save(@RequestBody DishDto dishDto) {
         dishService.saveWithFlavor(dishDto);
 //        String key = "dish_"+dishDto.getCategoryId()+"_1";
@@ -81,7 +81,7 @@ public class DishController {
     }
 
     @PostMapping("/status/{status}")
-    @CacheEvict(value = "dishCache",allEntries = true)
+    @CacheEvict(value = "dishCache", allEntries = true)
     public R<String> updateStatus(@PathVariable Integer status, Long[] ids) {
         List<Dish> dishes = dishService.listByIds(Arrays.asList(ids));
         for (Dish dish : dishes) {
@@ -94,7 +94,7 @@ public class DishController {
     }
 
     @PutMapping
-    @CacheEvict(value = "dishCache",key = "#dishDto.categoryId+'_1'")
+    @CacheEvict(value = "dishCache", key = "#dishDto.categoryId+'_1'")
     public R<String> update(@RequestBody DishDto dishDto) {
         dishService.updateWithFlavor(dishDto);
 //        String key = "dish_"+dishDto.getCategoryId()+"_1";
@@ -103,7 +103,7 @@ public class DishController {
     }
 
     @DeleteMapping
-    @CacheEvict(value = "dishCache",allEntries = true)
+    @CacheEvict(value = "dishCache", allEntries = true)
     public R<String> delete(Long[] ids) {
         dishService.deleteWithFlavor(ids);
 //        Set keys = redisTemplate.keys("dish_*");
@@ -112,7 +112,7 @@ public class DishController {
     }
 
     @GetMapping("/list")
-    @Cacheable(value = "dishCache",key = "#dish.categoryId+'_'+#dish.status")
+    @Cacheable(value = "dishCache", key = "#dish.categoryId+'_'+#dish.status")
     public R<List<DishDto>> list(Dish dish) {
 //        List<DishDto> dtoList = null;
 //        String key = "dish_"+dish.getCategoryId()+"_"+dish.getStatus();
@@ -127,9 +127,9 @@ public class DishController {
         List<Dish> list = dishService.list(lambdaQueryWrapper);
         for (Dish d : list) {
             DishDto dishDto = new DishDto();
-            BeanUtils.copyProperties(d,dishDto);
+            BeanUtils.copyProperties(d, dishDto);
             LambdaQueryWrapper<DishFlavor> lambdaQueryWrapperWithFlavor = new LambdaQueryWrapper<>();
-            lambdaQueryWrapperWithFlavor.eq(DishFlavor::getDishId,d.getId());
+            lambdaQueryWrapperWithFlavor.eq(DishFlavor::getDishId, d.getId());
             List<DishFlavor> flavors = dishFlavorService.list(lambdaQueryWrapperWithFlavor);
             dishDto.setFlavors(flavors);
             dtoList.add(dishDto);

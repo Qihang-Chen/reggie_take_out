@@ -8,11 +8,13 @@ import com.example.reggie.entity.*;
 import com.example.reggie.exception.CustomException;
 import com.example.reggie.mapper.OrdersMapper;
 import com.example.reggie.service.*;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -75,5 +77,24 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
         this.save(orders);
         orderDetailService.saveBatch(orderDetails);
         shoppingCartService.remove(lambdaQueryWrapper);
+    }
+
+    @Override
+    public void again(Orders orders) {
+        LambdaQueryWrapper<OrderDetail> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(OrderDetail::getOrderId, orders.getId());
+        List<OrderDetail> orderDetails = orderDetailService.list(lambdaQueryWrapper);
+        List<ShoppingCart> shoppingCarts = new ArrayList<>();
+        for (OrderDetail orderDetail : orderDetails) {
+            ShoppingCart shoppingCart = new ShoppingCart();
+            BeanUtils.copyProperties(orderDetail, shoppingCart, "id", "orderId");
+            shoppingCart.setCreateTime(LocalDateTime.now());
+            shoppingCart.setUserId(BaseContext.getCurrentId());
+            shoppingCarts.add(shoppingCart);
+        }
+        LambdaQueryWrapper<ShoppingCart> shoppingCartlambdaQueryWrapper = new LambdaQueryWrapper<>();
+        shoppingCartlambdaQueryWrapper.eq(shoppingCarts.size() != 0, ShoppingCart::getUserId, BaseContext.getCurrentId());
+        shoppingCartService.remove(shoppingCartlambdaQueryWrapper);
+        shoppingCartService.saveBatch(shoppingCarts);
     }
 }

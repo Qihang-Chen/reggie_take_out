@@ -31,42 +31,42 @@ public class UserController {
     private RedisTemplate redisTemplate;
 
     @PostMapping("/sendMsg")
-    public R<String> sendMsg(@RequestBody User user){
+    public R<String> sendMsg(@RequestBody User user) {
         String phone = user.getPhone();
-        if (StringUtils.isNotEmpty(phone)){
+        if (StringUtils.isNotEmpty(phone)) {
             String code = ValidateCodeUtils.generateValidateCode(4).toString();
-            log.info("code={}",code);
+            log.info("code={}", code);
             //SMSUtils.sendMessage("瑞吉外卖","",phone,code);
             //session.setAttribute(phone,code);
-            redisTemplate.opsForValue().set(phone,code,5, TimeUnit.MINUTES);
+            redisTemplate.opsForValue().set(phone, code, 5, TimeUnit.MINUTES);
             return R.success("短信发送成功");
         }
         return R.error("短信发送失败");
     }
 
     @PostMapping("/login")
-    public R<User> login(@RequestBody Map map, HttpServletRequest request){
+    public R<User> login(@RequestBody Map map, HttpServletRequest request) {
         String phone = (String) map.get("phone");
         //String code = (String) request.getSession().getAttribute(phone);
         String code = (String) redisTemplate.opsForValue().get(phone);
-        if (code != null && code.equals(map.get("code"))){
+        if (code != null && code.equals(map.get("code"))) {
             LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper();
-            lambdaQueryWrapper.eq(User::getPhone,phone);
+            lambdaQueryWrapper.eq(User::getPhone, phone);
             User user = userService.getOne(lambdaQueryWrapper);
-            if (user == null){
+            if (user == null) {
                 user = new User();
                 user.setPhone(phone);
                 userService.save(user);
             }
             redisTemplate.delete(phone);
-            request.getSession().setAttribute("user",user.getId());
+            request.getSession().setAttribute("user", user.getId());
             return R.success(user);
         }
         return R.error("登录失败");
     }
 
     @PostMapping("/logout")
-    public R<String> logout(HttpServletRequest request){
+    public R<String> logout(HttpServletRequest request) {
         request.getSession().removeAttribute("user");
         return R.success("退出成功");
     }
