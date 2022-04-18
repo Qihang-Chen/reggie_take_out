@@ -56,6 +56,7 @@ public class UserController {
             if (user == null) {
                 user = new User();
                 user.setPhone(phone);
+                user.setName("用户"+code);
                 userService.save(user);
             }
             redisTemplate.delete(phone);
