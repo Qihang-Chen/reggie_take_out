@@ -37,7 +37,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
     @Override
     @Transactional
     public void submit(Orders orders) {
-        Long userId = BaseContext.getCurrentId();
+        Long userId = BaseContext.getUserCurrentId();
         LambdaQueryWrapper<ShoppingCart> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(ShoppingCart::getUserId, userId);
         List<ShoppingCart> list = shoppingCartService.list(lambdaQueryWrapper);
@@ -61,6 +61,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
             orderDetail.setImage(shoppingCart.getImage());
             orderDetail.setDishId(shoppingCart.getDishId());
             orderDetail.setDishFlavor(shoppingCart.getDishFlavor());
+            orderDetail.setSetmealId(shoppingCart.getSetmealId());
             orderDetails.add(orderDetail);
             amount.addAndGet(shoppingCart.getAmount().multiply(new BigDecimal(shoppingCart.getNumber())).intValue());
         }
@@ -89,11 +90,11 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
             ShoppingCart shoppingCart = new ShoppingCart();
             BeanUtils.copyProperties(orderDetail, shoppingCart, "id", "orderId");
             shoppingCart.setCreateTime(LocalDateTime.now());
-            shoppingCart.setUserId(BaseContext.getCurrentId());
+            shoppingCart.setUserId(BaseContext.getUserCurrentId());
             shoppingCarts.add(shoppingCart);
         }
         LambdaQueryWrapper<ShoppingCart> shoppingCartlambdaQueryWrapper = new LambdaQueryWrapper<>();
-        shoppingCartlambdaQueryWrapper.eq(shoppingCarts.size() != 0, ShoppingCart::getUserId, BaseContext.getCurrentId());
+        shoppingCartlambdaQueryWrapper.eq(shoppingCarts.size() != 0, ShoppingCart::getUserId, BaseContext.getUserCurrentId());
         shoppingCartService.remove(shoppingCartlambdaQueryWrapper);
         shoppingCartService.saveBatch(shoppingCarts);
     }

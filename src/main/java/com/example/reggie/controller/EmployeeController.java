@@ -5,13 +5,18 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.reggie.common.R;
 import com.example.reggie.entity.Employee;
 import com.example.reggie.service.EmployeeService;
+import com.example.reggie.utils.CookieUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RestController
@@ -20,8 +25,11 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     @PostMapping("/login")
-    public R<Employee> login(HttpServletRequest request, @RequestBody Employee employee) {
+    public R<Employee> login(HttpServletRequest request, HttpServletResponse response, @RequestBody Employee employee) {
         String password = employee.getPassword();
         password = DigestUtils.md5DigestAsHex(password.getBytes());
         log.info(password);
@@ -38,13 +46,19 @@ public class EmployeeController {
         if (emp.getStatus() == 0) {
             return R.error("没有权限");
         }
-        request.getSession().setAttribute("employee", emp.getId());
+//        request.getSession().setAttribute("employee", emp.getId());
+        String ticket = UUID.randomUUID().toString();
+        CookieUtil.setCookie(request, response, "employeeticket", ticket);
+        redisTemplate.opsForValue().set(ticket, emp.getId(), 6, TimeUnit.HOURS);
         return R.success(emp);
     }
 
     @PostMapping("/logout")
-    public R<String> loginout(HttpServletRequest request) {
-        request.getSession().removeAttribute("employee");
+    public R<String> loginout(HttpServletRequest request, HttpServletResponse response) {
+//        request.getSession().removeAttribute("employee");
+        String ticket = CookieUtil.getCookieValue(request, "employeeticket");
+        redisTemplate.delete(ticket);
+        CookieUtil.deleteCookie(request, response, "employeeticket");
         return R.success("退出成功");
     }
 

@@ -39,7 +39,7 @@ public class OrderController {
         Page<Orders> pageInfo = new Page<>(page, pageSize);
         Page<OrdersDto> pageDtoInfo = new Page<>();
         LambdaQueryWrapper<Orders> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(Orders::getUserId, BaseContext.getCurrentId());
+        lambdaQueryWrapper.eq(Orders::getUserId, BaseContext.getUserCurrentId());
         lambdaQueryWrapper.orderByDesc(Orders::getOrderTime);
         ordersService.page(pageInfo, lambdaQueryWrapper);
         BeanUtils.copyProperties(pageInfo, pageDtoInfo, "records");

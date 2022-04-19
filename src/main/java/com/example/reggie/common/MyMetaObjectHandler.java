@@ -17,18 +17,18 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         if (originalObject instanceof Orders) {
             metaObject.setValue("orderTime", LocalDateTime.now());
             metaObject.setValue("checkoutTime", LocalDateTime.now());
-            metaObject.setValue("userId", BaseContext.getCurrentId());
+            metaObject.setValue("userId", BaseContext.getUserCurrentId());
         } else {
             metaObject.setValue("createTime", LocalDateTime.now());
             metaObject.setValue("updateTime", LocalDateTime.now());
-            metaObject.setValue("createUser", BaseContext.getCurrentId());
-            metaObject.setValue("updateUser", BaseContext.getCurrentId());
+            metaObject.setValue("createUser", BaseContext.getEmployeeCurrentId());
+            metaObject.setValue("updateUser", BaseContext.getEmployeeCurrentId());
         }
     }
 
     @Override
     public void updateFill(MetaObject metaObject) {
         metaObject.setValue("updateTime", LocalDateTime.now());
-        metaObject.setValue("updateUser", BaseContext.getCurrentId());
+        metaObject.setValue("updateUser", BaseContext.getEmployeeCurrentId());
     }
 }

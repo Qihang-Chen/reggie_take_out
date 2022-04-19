@@ -24,7 +24,7 @@ public class AddressBookController {
 
     @GetMapping("/list")
     public R<List<AddressBook>> list() {
-        Long userId = BaseContext.getCurrentId();
+        Long userId = BaseContext.getUserCurrentId();
         LambdaQueryWrapper<AddressBook> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(AddressBook::getUserId, userId);
         lambdaQueryWrapper.orderByDesc(AddressBook::getUpdateTime);
@@ -34,7 +34,7 @@ public class AddressBookController {
 
     @PostMapping
     public R<AddressBook> save(@RequestBody AddressBook addressBook) {
-        addressBook.setUserId(BaseContext.getCurrentId());
+        addressBook.setUserId(BaseContext.getUserCurrentId());
         addressBookService.save(addressBook);
         return R.success(addressBook);
     }
@@ -42,7 +42,7 @@ public class AddressBookController {
     @PutMapping("/default")
     public R<AddressBook> setDefault(@RequestBody AddressBook addressBook) {
         LambdaUpdateWrapper<AddressBook> lambdaUpdateWrapper = new LambdaUpdateWrapper();
-        lambdaUpdateWrapper.eq(AddressBook::getUserId, BaseContext.getCurrentId());
+        lambdaUpdateWrapper.eq(AddressBook::getUserId, BaseContext.getUserCurrentId());
         lambdaUpdateWrapper.set(AddressBook::getIsDefault, 0);
         addressBookService.update(lambdaUpdateWrapper);
         addressBook.setIsDefault(1);
@@ -62,7 +62,7 @@ public class AddressBookController {
     @GetMapping("/default")
     public R<AddressBook> getDefault() {
         LambdaQueryWrapper<AddressBook> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(AddressBook::getUserId, BaseContext.getCurrentId());
+        lambdaQueryWrapper.eq(AddressBook::getUserId, BaseContext.getUserCurrentId());
         lambdaQueryWrapper.eq(AddressBook::getIsDefault, 1);
         AddressBook addressBook = addressBookService.getOne(lambdaQueryWrapper);
         if (addressBook != null) {

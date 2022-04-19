@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.reggie.common.R;
 import com.example.reggie.entity.User;
 import com.example.reggie.service.UserService;
+import com.example.reggie.utils.CookieUtil;
 import com.example.reggie.utils.SMSUtils;
 import com.example.reggie.utils.ValidateCodeUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -15,9 +16,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -45,7 +49,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public R<User> login(@RequestBody Map map, HttpServletRequest request) {
+    public R<User> login(@RequestBody Map map, HttpServletRequest request, HttpServletResponse response) {
         String phone = (String) map.get("phone");
         //String code = (String) request.getSession().getAttribute(phone);
         String code = (String) redisTemplate.opsForValue().get(phone);
@@ -56,19 +60,24 @@ public class UserController {
             if (user == null) {
                 user = new User();
                 user.setPhone(phone);
-                user.setName("用户"+code);
+                user.setName("用户" + code);
                 userService.save(user);
             }
             redisTemplate.delete(phone);
-            request.getSession().setAttribute("user", user.getId());
+            String ticket = UUID.randomUUID().toString();
+            CookieUtil.setCookie(request, response, "userticket", ticket, 6 * 60 * 60);
+            redisTemplate.opsForValue().set(ticket, user.getId(), 6, TimeUnit.HOURS);
+            //request.getSession().setAttribute("user", user.getId());
             return R.success(user);
         }
         return R.error("登录失败");
     }
 
     @PostMapping("/logout")
-    public R<String> logout(HttpServletRequest request) {
-        request.getSession().removeAttribute("user");
+    public R<String> logout(HttpServletRequest request, HttpServletResponse response) {
+        String ticket = CookieUtil.getCookieValue(request, "userticket");
+        redisTemplate.delete(ticket);
+        CookieUtil.deleteCookie(request, response, "userticket");
         return R.success("退出成功");
     }
 
